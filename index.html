@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>🐍 مشغّل بايثون</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐍%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#eef2f8;--panel:#ffffff;--ink:#14233a;--mute:#5d6f8a;--line:#d3dbe8;
+  --blue:#3776ab;--gold:#f0b400;--goldink:#2a2000;--out:#0f1b2d;--outink:#dfe9f7;
+  --err:#ff8a80;--info:#7cc4ff;--ok:#6fe3a1;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0c1626;--panel:#142239;--ink:#e6edf7;--mute:#92a4c0;--line:#243653;
+  --blue:#6fb1e6;--out:#08111f;
+}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0c1626;--panel:#142239;--ink:#e6edf7;--mute:#92a4c0;--line:#243653;--blue:#6fb1e6;--out:#08111f}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Tajawal',system-ui,'Segoe UI',Tahoma,sans-serif;font-size:16px;line-height:1.6;
+  padding:env(safe-area-inset-top,0px) 14px env(safe-area-inset-bottom,0px)}
+main{max-width:860px;margin:0 auto;padding:18px 0 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+h1{font-size:1.5rem;font-weight:800;margin:0}
+.pill{display:flex;align-items:center;gap:7px;font-size:.85rem;color:var(--mute);background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:3px 12px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--gold)}
+.pill.on .dot{background:var(--ok)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+[hidden]{display:none!important}
+.gate{text-align:center}
+.gate p{margin:6px 0;color:var(--mute)}
+.code{direction:ltr;font:800 3rem/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.35em;padding:.4em .2em .4em .55em;margin:14px 0;color:var(--blue);
+  border:2px dashed var(--blue);border-radius:12px;user-select:all}
+.cmd{direction:ltr;display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:4px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ink)}
+.msg{margin-top:14px;font-weight:700}
+.msg.bad{color:#d6453a}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.bar .sp{flex:1}
+button,select{font:inherit;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 16px;cursor:pointer}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+#run{background:var(--gold);color:var(--goldink);border-color:var(--gold);font-weight:800}
+#stop{border-color:#d6453a;color:#d6453a;font-weight:700}
+button:disabled{opacity:.45;cursor:not-allowed}
+.ver{color:var(--mute);font-size:.85rem}
+textarea{width:100%;min-height:230px;resize:vertical;direction:ltr;text-align:left;tab-size:4;
+  font:14px/1.55 ui-monospace,Menlo,Consolas,monospace;background:var(--panel);color:var(--ink);
+  border:1px solid var(--line);border-radius:12px;padding:12px}
+.outwrap{margin-top:12px;background:var(--out);border-radius:12px;overflow:hidden}
+#out{margin:0;direction:ltr;text-align:left;min-height:150px;max-height:55vh;overflow:auto;padding:12px;
+  font:13.5px/1.5 ui-monospace,Menlo,Consolas,monospace;color:var(--outink);white-space:pre-wrap;word-break:break-word}
+#out .e{color:var(--err)}#out .i{color:var(--info)}#out .s{color:var(--ok)}#out .u{color:#ffd86b}
+.inrow{display:flex;border-top:1px solid #243653}
+.inrow input{flex:1;direction:ltr;text-align:left;background:transparent;border:0;color:var(--outink);padding:10px 12px;font:13.5px ui-monospace,Menlo,Consolas,monospace}
+.inrow button{border:0;border-radius:0;background:#1b2e4a;color:var(--outink)}
+.hint{color:var(--mute);font-size:.82rem;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>🐍 مشغّل بايثون</h1>
+    <div class="pill" id="pill"><span class="dot"></span><span id="pillT">جاري الاتصال</span></div>
+  </header>
+
+  <section class="card gate" id="gate">
+    <p id="gateHead">جاري تجهيز كود التحقق…</p>
+    <div class="code" id="code" aria-live="polite">······</div>
+    <p>اكتب في محادثة البوت:</p>
+    <span class="cmd" id="cmd">.بايثون 000000</span>
+    <div class="msg" id="gateMsg"></div>
+    <p class="hint">الكود صالح لمدة ١٠ دقائق ويتجدد تلقائياً. الصفحة للمالك والمطور فقط.</p>
+  </section>
+
+  <section id="app" hidden>
+    <div class="bar">
+      <button id="run" type="button">▶ تشغيل</button>
+      <button id="stop" type="button" disabled>■ إيقاف</button>
+      <select id="tmo" aria-label="مدة التشغيل الأقصى">
+        <option value="60000">دقيقة</option>
+        <option value="300000" selected>٥ دقائق</option>
+        <option value="900000">١٥ دقيقة</option>
+      </select>
+      <span class="sp"></span>
+      <span class="ver" id="ver"></span>
+    </div>
+    <textarea id="ed" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="كود بايثون" placeholder="# الصق كود بايثون هنا
+print('مرحبا')"></textarea>
+    <div class="outwrap">
+      <pre id="out" aria-live="polite"></pre>
+      <form class="inrow" id="inForm"><input id="inp" placeholder="إدخال للبرنامج (input) ثم Enter" autocomplete="off"><button type="submit">إرسال</button></form>
+    </div>
+    <p class="hint">Ctrl + Enter للتشغيل. المكتبات الناقصة تُثبَّت تلقائياً. الملفات التي ينشئها كودك تبقى في مجلد العمل على السيرفر.</p>
+  </section>
+</main>
+
+<script>
+(() => {
+'use strict';
+// لازم يطابق RELAY في python.js
+const RELAYS = ['https://ntfy.sh'];
+
+const $ = id => document.getElementById(id);
+const te = new TextEncoder(), td = new TextDecoder();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const rnd = () => Array.from(crypto.getRandomValues(new Uint8Array(10)), x => (x % 36).toString(36)).join('');
+const u8b64 = u => { let s = ''; for (let i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(s); };
+const b64u8 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const sha = async d => new Uint8Array(await crypto.subtle.digest('SHA-256', d));
+const hex = u => Array.from(u, x => x.toString(16).padStart(2, '0')).join('');
+const aes = raw => crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
+async function enc(k, obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, te.encode(JSON.stringify(obj))));
+  const o = new Uint8Array(12 + ct.length); o.set(iv); o.set(ct, 12);
+  return u8b64(o);
+}
+async function dec(k, b) {
+  const u = b64u8(b);
+  return JSON.parse(td.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: u.subarray(0, 12) }, k, u.subarray(12))));
+}
+const ar = n => String(n).replace(/\d/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+
+// ---------- قراءة الرابط ----------
+const h = new URLSearchParams(location.hash.slice(1));
+const T = h.get('t') || '', R = h.get('r') || '', S = (h.get('s') || '').replace(/\/+$/, '');
+const fatal = m => { $('gateHead').textContent = '⚠️ ' + m; $('code').hidden = true; $('cmd').hidden = true; };
+if (!/^[a-f0-9]{32}$/.test(T) || !/^[A-Za-z0-9_-]{8,64}$/.test(R) || !RELAYS.includes(S)) {
+  fatal('الرابط غير صالح. اكتب .بايثون في البوت لتحصل على رابط جديد.');
+  return;
+}
+if (!(window.crypto && crypto.subtle)) { fatal('المتصفح لا يدعم التشفير، افتح الرابط من متصفح حديث عبر https.'); return; }
+
+let TID = '', FEED = '', tokKey = null, sessKey = null, kp = null, code = '', authTimer = 0;
+let rid = '', running = false, pingT = 0, locked = false;
+const waits = new Map();
+
+// ---------- الإرسال ----------
+async function send(obj, sess) {
+  const d = await enc(sess ? sessKey : tokKey, obj);
+  const body = JSON.stringify(sess ? { v: 1, k: TID, s: 1, d } : { v: 1, k: TID, d });
+  const r = await fetch(`${S}/${R}`, { method: 'POST', headers: { 'Content-Type': 'text/plain; charset=utf-8' }, body });
+  if (!r.ok) throw new Error(r.status === 429 ? 'الوسيط مشغول، انتظر قليلاً ثم أعد المحاولة.' : 'تعذّر الإرسال (' + r.status + ')');
+}
+function ask(a, extra, sess, ms) {
+  const m = rnd();
+  return new Promise((res, rej) => {
+    const t = setTimeout(() => { waits.delete(m); rej(new Error('timeout')); }, ms || 15000);
+    waits.set(m, o => { clearTimeout(t); res(o); });
+    send({ a, m, ...extra }, sess).catch(e => { clearTimeout(t); waits.delete(m); rej(e); });
+  });
+}
+
+// ---------- الاستقبال (بث مستمر من الوسيط) ----------
+const seen = new Set();
+let chain = Promise.resolve();
+function online(on) { $('pill').classList.toggle('on', on); $('pillT').textContent = on ? 'متصل' : 'جاري الاتصال'; }
+async function listen() {
+  let since = '30s';
+  for (;;) {
+    const ac = new AbortController();
+    let wd = setTimeout(() => ac.abort(), 130000);
+    try {
+      const r = await fetch(`${S}/${FEED}/json?since=${since}`, { signal: ac.signal });
+      if (!r.ok) throw new Error('relay');
+      online(true);
+      const rd = r.body.getReader(); let buf = '';
+      for (;;) {
+        const { done, value } = await rd.read();
+        if (done) break;
+        clearTimeout(wd); wd = setTimeout(() => ac.abort(), 130000);
+        buf += td.decode(value, { stream: true });
+        let i;
+        while ((i = buf.indexOf('\n')) >= 0) {
+          const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+          if (!line) continue;
+          let ev; try { ev = JSON.parse(line); } catch { continue; }
+          if (ev.time) since = String(ev.time);
+          if (ev.event === 'message') chain = chain.then(() => onMsg(ev)).catch(() => {});
+        }
+      }
+    } catch {}
+    clearTimeout(wd); online(false);
+    await sleep(3000);
+  }
+}
+async function onMsg(ev) {
+  if (ev.id) { if (seen.has(ev.id)) return; seen.add(ev.id); if (seen.size > 500) seen.delete(seen.values().next().value); }
+  let m; try { m = JSON.parse(ev.message); } catch { return; }
+  if (!m || m.v !== 1 || m.k !== TID || typeof m.d !== 'string') return;
+  let o = null;
+  if (sessKey) { try { o = await dec(sessKey, m.d); } catch {} }
+  if (!o) { try { o = await dec(tokKey, m.d); } catch { return; } }
+  await handle(o);
+}
+async function handle(o) {
+  if (!o || typeof o.t !== 'string') return;
+  if (o.t === 'ack') { const f = waits.get(o.m); if (f) { waits.delete(o.m); f(o); } return; }
+  if (o.t === 'py') { for (const e of (o.l || [])) onEv(e); return; }
+  if (o.t === 'auth') { await onAuth(o); return; }
+  if (o.t === 'err') {
+    if (o.error === 'reauth' && sessKey) { sessKey = null; setRunning(false); beginAuth(); return; }
+    if (o.error === 'invalid') lock(o.message || 'انتهت صلاحية الرابط، اكتب .بايثون في البوت لتحصل على رابط جديد.');
+  }
+}
+function lock(msg) {
+  locked = true; clearTimeout(authTimer); setRunning(false);
+  $('app').hidden = true; $('gate').hidden = false; $('code').hidden = true; $('cmd').hidden = true;
+  $('gateHead').textContent = msg; $('gateMsg').textContent = '';
+}
+
+// ---------- التحقق ----------
+const gm = (t, bad) => { const e = $('gateMsg'); e.textContent = t; e.className = 'msg' + (bad ? ' bad' : ''); };
+async function beginAuth() {
+  if (locked) return;
+  clearTimeout(authTimer);
+  $('app').hidden = true; $('gate').hidden = false; $('code').hidden = false; $('cmd').hidden = false;
+  $('gateHead').textContent = 'جاري تجهيز كود التحقق…'; gm('');
+  try {
+    kp = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']);
+    const pk = u8b64(new Uint8Array(await crypto.subtle.exportKey('raw', kp.publicKey)));
+    for (let i = 0; i < 5; i++) {
+      code = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
+      const a = await ask('auth', { c: code, pk });
+      if (a.ok) {
+        $('code').textContent = code;
+        $('cmd').textContent = (a.p || '.') + 'بايثون ' + code;
+        $('gateHead').textContent = 'اكتب هذا الكود في المحادثة لتأكيد أنك المالك';
+        gm('بانتظار الكود…');
+        authTimer = setTimeout(beginAuth, 9 * 60 * 1000);
+        return;
+      }
+      if (a.error !== 'taken') { gm(a.message || 'تعذّر التسجيل، أعد تحميل الصفحة.', true); return; }
+    }
+  } catch (e) {
+    gm(e.message === 'timeout' ? 'البوت لا يرد حالياً. تأكد أنه شغّال، وسأعيد المحاولة تلقائياً.' : e.message, true);
+    authTimer = setTimeout(beginAuth, 10000);
+  }
+}
+async function onAuth(o) {
+  if (o.c !== code) return;
+  if (!o.ok) { clearTimeout(authTimer); gm('🔒 هذا الأمر مخصص للمالك فقط.', true); return; }
+  try {
+    const bot = await crypto.subtle.importKey('raw', b64u8(o.bp), { name: 'ECDH', namedCurve: 'P-256' }, false, []);
+    const shared = new Uint8Array(await crypto.subtle.deriveBits({ name: 'ECDH', public: bot }, kp.privateKey, 256));
+    const pre = te.encode('obito-py-s:' + T);
+    const all = new Uint8Array(pre.length + shared.length); all.set(pre); all.set(shared, pre.length);
+    sessKey = await aes(await sha(all));
+    clearTimeout(authTimer);
+    $('gate').hidden = true; $('app').hidden = false;
+    const st = await ask('state', {}, true).catch(() => null);
+    $('ver').textContent = st && st.py ? 'Python ' + st.py : (st ? '⚠️ بايثون غير مثبت على السيرفر' : '');
+    if (st && st.run) { rid = st.run.rid; setRunning(true); add('\n(عملية شغّالة من قبل، المخرجات الجديدة ستظهر هنا)\n', 'i'); }
+  } catch { gm('فشل التحقق، سيتم إنشاء كود جديد.', true); setTimeout(beginAuth, 2000); }
+}
+
+// ---------- التشغيل ----------
+const out = $('out'), ed = $('ed');
+function add(t, c) {
+  const near = out.scrollHeight - out.scrollTop - out.clientHeight < 40;
+  const s = document.createElement('span'); if (c) s.className = c; s.textContent = t; out.appendChild(s);
+  while (out.childNodes.length > 1500) out.removeChild(out.firstChild);
+  if (near) out.scrollTop = out.scrollHeight;
+}
+function setRunning(v) {
+  running = v; $('run').disabled = v; $('stop').disabled = !v;
+  clearInterval(pingT);
+  if (v) pingT = setInterval(() => send({ a: 'ping' }, true).catch(() => {}), 45000);
+}
+const WHY = { user: 'أوقفتها يدوياً', timeout: 'انتهت المهلة', noping: 'انقطع اتصال الصفحة', cap: 'المخرجات تجاوزت الحد', expired: 'انتهت الجلسة', reauth: 'جلسة جديدة' };
+function onEv(e) {
+  if (!e || e.r !== rid) return;
+  if (e.k === 's') { if (e.v) $('ver').textContent = 'Python ' + e.v; }
+  else if (e.k === 'o') add(e.d);
+  else if (e.k === 'e') add(e.d, 'e');
+  else if (e.k === 'i') add(e.d, 'i');
+  else if (e.k === 'x') {
+    setRunning(false);
+    if (e.c === -2) return;
+    const sec = ((e.ms || 0) / 1000).toFixed(1);
+    add(`\n— انتهى ${e.w ? '(' + (WHY[e.w] || e.w) + ') ' : ''}• كود الخروج ${e.c} • ${ar(sec)} ثانية\n`, e.c === 0 ? 's' : 'e');
+  }
+}
+async function runCode() {
+  if (running || !sessKey) return;
+  const src = ed.value;
+  if (!src.trim()) return;
+  const bytes = te.encode(src);
+  if (bytes.length > 60000) { add('⚠️ الكود طويل جداً (الحد ٦٠ ألف بايت).\n', 'e'); return; }
+  try { localStorage.setItem('pyrun-draft', src); } catch {}
+  rid = rnd(); out.textContent = ''; setRunning(true); add('جاري الإرسال…\n', 'i');
+  const SZ = 1350, n = Math.max(1, Math.ceil(bytes.length / SZ)), to = +$('tmo').value;
+  try {
+    for (let i = 0; i < n; i++) await send({ a: 'run', rid, n, i, c: u8b64(bytes.subarray(i * SZ, (i + 1) * SZ)), to }, true);
+  } catch (e) { add('⚠️ ' + e.message + '\n', 'e'); setRunning(false); }
+}
+$('run').onclick = runCode;
+$('stop').onclick = () => { send({ a: 'stop', m: rnd() }, true).catch(e => add('⚠️ ' + e.message + '\n', 'e')); };
+$('inForm').onsubmit = ev => {
+  ev.preventDefault();
+  const v = $('inp').value; if (!running) return;
+  $('inp').value = ''; add(v + '\n', 'u');
+  send({ a: 'in', rid, t: v }, true).catch(() => {});
+};
+ed.addEventListener('keydown', ev => {
+  if (ev.key === 'Tab') { ev.preventDefault(); document.execCommand('insertText', false, '    '); }
+  else if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); runCode(); }
+});
+ed.addEventListener('input', () => { try { localStorage.setItem('pyrun-draft', ed.value); } catch {} });
+try { ed.value = localStorage.getItem('pyrun-draft') || ''; } catch {}
+
+// ---------- البداية ----------
+(async () => {
+  TID = hex(await sha(te.encode(T))).slice(0, 20);
+  FEED = `${R}-f-${TID}`;
+  tokKey = await aes(await sha(te.encode('obito-py:' + T)));
+  listen();
+  beginAuth();
+})();
+})();
+</script>
+</body>
+</html>
